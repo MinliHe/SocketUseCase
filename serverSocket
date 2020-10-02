@@ -1,0 +1,53 @@
+#import socket module
+import socket
+from socket import AF_INET, SOCK_STREAM
+import sys #In order to terminate the program
+
+serverSocket = socket.socket (AF_INET, SOCK_STREAM)
+
+#Fill in start
+serverPort = 80
+serverSocket.bind(('', serverPort))
+serverSocket.listen(1)
+print("The web server is up on port: ", serverPort)
+#print("The server is ready to receive")
+#Fill in end
+while True:
+        #Establish the connection
+        print("Ready to serve...")
+
+        connectionSocket, addr = serverSocket.accept() #Fill in end
+        try:
+            message = connectionSocket.recv(1024).decode("utf-8") #Fill in end
+            print(message, "::", message.split()[0],":",message.split()[1])
+            filename = message.split()[1]
+            print(filename, "||", filename[1:])
+            f = open(filename[1:])
+            outputdata = f.read() #Fill in end
+            #Send one HTTP header line into socket
+            #Fill in start
+            connectionSocket.send(bytes("HTTP/1.1 200 OK\r\n\r\n","utf-8"))
+            #Fill in end
+            #Send the content of the requested file to the client
+            for i in range(0, len(outputdata)):
+                connectionSocket.send(outputdata[i].encode("utf-8"))
+            connectionSocket.send("\r\n".encode("utf-8"))
+
+            connectionSocket.close()
+
+        except IOError:
+            #Send response message for file not found
+            #Fill in start
+            #fail = '''<html><head><title> 404 </title> </head> <body><h1> 404 Not Found</h1> </body></html> '''
+            connectionSocket.send(bytes("HTTP/1.1 404 Not Found\r\n\r\n", "utf-8"))
+            #connectionSocket.send(bytes("HTTP/1.0 200 OK\r\n\r\n"%len(fail),"utf-8"))
+            connectionSocket.send(bytes("<html><head><title> 404 </title> </head> <body><h1> 404 Not Found</h1> </body></html>\r\n","utf-8"))
+            #for q in fail:
+                #connectionSocket.send(q)
+        
+        #Close client socket
+        serverSocket.close()
+        #Terminate the program after sending the corresponding data
+        sys.exit()
+
+
